@@ -13,9 +13,9 @@ testPure =
             5
 
         ( newModel, cmd ) =
-            pure model
+            save model
     in
-    describe "pure"
+    describe "save"
         [ test "expect 5 to appear in tuple" <|
             \_ -> Expect.equal model newModel
         , test "expect no command" <|
@@ -30,32 +30,11 @@ testMap =
             41
 
         ( newModel, cmd ) =
-            map ((+) 1) (pure model)
+            map ((+) 1) (save model)
     in
     describe "map"
         [ test "expect value in tuple to increment by 1" <|
             \_ -> Expect.equal newModel (model + 1)
-        ]
-
-
-testAp : Test
-testAp =
-    let
-        f x y =
-            x ++ y
-
-        a =
-            "palak"
-
-        b =
-            "paneer"
-
-        ( result, _ ) =
-            ap (map f (pure a)) (pure b)
-    in
-    describe "ap"
-        [ test "expect result to appear in first component" <|
-            \_ -> Expect.equal result (f a b)
         ]
 
 
@@ -72,7 +51,7 @@ testMap2 =
             x + y
 
         ( result, _ ) =
-            map2 fun (pure a) (pure b)
+            map2 fun (save a) (save b)
     in
     describe "map2"
         [ test "expect result to match unlifted version of function" <|
@@ -96,7 +75,7 @@ testMap3 =
             x + z * y
 
         ( result, _ ) =
-            map3 fun (pure a) (pure b) (pure c)
+            map3 fun (save a) (save b) (save c)
     in
     describe "map3"
         [ test "expect result to match unlifted version of function" <|
@@ -123,7 +102,7 @@ testMap4 =
             x + z * y - z1
 
         ( result, _ ) =
-            map4 fun (pure a) (pure b) (pure c) (pure d)
+            map4 fun (save a) (save b) (save c) (save d)
     in
     describe "map4"
         [ test "expect result to match unlifted version of function" <|
@@ -153,7 +132,7 @@ testMap5 =
             (x + z * y - z1) ^ z2
 
         ( result, _ ) =
-            map5 fun (pure a) (pure b) (pure c) (pure d) (pure e)
+            map5 fun (save a) (save b) (save c) (save d) (save e)
     in
     describe "map5"
         [ test "expect result to match unlifted version of function" <|
@@ -186,7 +165,7 @@ testMap6 =
             ( z3, (x + z * y - z1) ^ z2 )
 
         ( result, _ ) =
-            map6 fun (pure a) (pure b) (pure c) (pure d) (pure e) (pure f)
+            map6 fun (save a) (save b) (save c) (save d) (save e) (save f)
     in
     describe "map6"
         [ test "expect result to match unlifted version of function" <|
@@ -222,7 +201,7 @@ testMap7 =
             ( z3 ++ z4, (x + z * y - z1) ^ z2 )
 
         ( result, _ ) =
-            map7 fun (pure a) (pure b) (pure c) (pure d) (pure e) (pure f) (pure g)
+            map7 fun (save a) (save b) (save c) (save d) (save e) (save f) (save g)
     in
     describe "map7"
         [ test "expect result to match unlifted version of function" <|
@@ -249,10 +228,10 @@ testAndMap =
             3
 
         ( result, _ ) =
-            map f (pure a)
-                |> andMap (pure b)
-                |> andMap (pure c)
-                |> andMap (pure d)
+            map f (save a)
+                |> andMap (save b)
+                |> andMap (save c)
+                |> andMap (save d)
     in
     describe "andMap"
         [ test "expect result to appear in first component" <|
@@ -264,7 +243,7 @@ testJoin : Test
 testJoin =
     let
         ( newModel, _ ) =
-            join (pure (pure 5))
+            join (save (save 5))
     in
     describe "join"
         [ test "expect 5 to appear in tuple" <|
@@ -276,11 +255,11 @@ testAndThen : Test
 testAndThen =
     let
         incrementValue x =
-            pure (x + 1)
+            save (x + 1)
 
         ( result, _ ) =
-            pure 5
-                |> andThen (\_ -> pure 7)
+            save 5
+                |> andThen (\_ -> save 7)
                 |> andThen incrementValue
     in
     describe "andThen"
@@ -293,10 +272,10 @@ testKleisli : Test
 testKleisli =
     let
         f x =
-            pure (x + 8)
+            save (x + 8)
 
         g y =
-            pure (y / 2)
+            save (y / 2)
 
         h =
             kleisli f g
@@ -314,13 +293,13 @@ testSequence : Test
 testSequence =
     let
         cmd1 =
-            [ always (pure 1)
-            , always (pure 3)
+            [ always (save 1)
+            , always (save 3)
             ]
 
         cmd2 =
-            [ \x -> pure (x / 2)
-            , \y -> pure (y + 1)
+            [ \x -> save (x / 2)
+            , \y -> save (y + 1)
             ]
 
         ( result1, _ ) =
@@ -391,7 +370,7 @@ testWhen : Test
 testWhen =
     let
         f x =
-            when (x > 5) (\y -> pure (y + 1))
+            when (x > 5) (\y -> save (y + 1))
 
         ( result1, _ ) =
             f 11 3
@@ -416,8 +395,8 @@ testAndWith =
             }
 
         ( result, _ ) =
-            pure record
-                |> andWith .this (\str rec -> pure { rec | wat = str ++ "hat" })
+            save record
+                |> andWith .this (\str rec -> save { rec | wat = str ++ "hat" })
     in
     describe "andWith"
         [ test "expect second field to be concatenate string" <|
@@ -434,8 +413,8 @@ testAndUsing =
             }
 
         ( result, _ ) =
-            pure record
-                |> andUsing (\{ this } _ -> pure (this ++ "hat"))
+            save record
+                |> andUsing (\{ this } _ -> save (this ++ "hat"))
     in
     describe "andUsing"
         [ test "expect the result to concatenated string" <|
@@ -447,8 +426,8 @@ testAndIf : Test
 testAndIf =
     let
         f x =
-            pure 3
-                |> andIf (x > 5) (\y -> pure (y + 2))
+            save 3
+                |> andIf (x > 5) (\y -> save (y + 2))
 
         ( result1, _ ) =
             f 11
@@ -469,7 +448,6 @@ suite =
     describe "Update.Pipeline"
         [ testPure
         , testMap
-        , testAp
         , testMap2
         , testMap3
         , testMap4
