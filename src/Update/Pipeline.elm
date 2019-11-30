@@ -1,4 +1,41 @@
-module Update.Pipeline exposing (addCmd, andAddCmd, andIf, andMap, andThen, andUsing, andWith, ap, join, kleisli, map, map2, map3, map4, map5, map6, map7, mapCmd, pure, sequence, using, when, with)
+module Update.Pipeline exposing
+    ( pure, map, addCmd, mapCmd, join
+    , andThen, sequence, when, andIf, kleisli
+    , map2, map3, map4, map5, map6, map7, andMap, ap
+    , using, with
+    , andAddCmd, andUsing, andWith
+    )
+
+{-| TODO
+
+
+## Basics
+
+@docs pure, map, addCmd, mapCmd, join
+
+
+## Chaining Updates
+
+@docs andThen, sequence, when, andIf, kleisli
+
+
+## Applicative Interface
+
+These functions address the need to map over functions having more than one argument.
+
+@docs map2, map3, map4, map5, map6, map7, andMap, ap
+
+
+## Pointfree Helpers
+
+@docs using, with
+
+
+## Other Shortcuts
+
+@docs andAddCmd, andMap, andThen, andUsing, andWith
+
+-}
 
 
 pure : a -> ( a, Cmd msg )
