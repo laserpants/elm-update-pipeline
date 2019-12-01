@@ -3,7 +3,7 @@
 [![Build Status](https://img.shields.io/travis/laserpants/elm-update-pipeline/master.svg?style=flat)](https://travis-ci.org/laserpants/elm-update-pipeline)
 [![Version](https://img.shields.io/badge/elm--version-0.19-blue.svg?colorB=ff69b4)](http://elm-lang.org/)
 
-This library defines an interface for sequential composition of updates in the convenient style of _pipelines_,
+A library for sequential composition of updates in the convenient style of _pipelines_,
 where functions are chained together using the pipe operator. For example;
 
 ```elm
