@@ -33,7 +33,7 @@ These functions address the need to map functions with more than one parameter o
 
 ### A note about pointfree style and η-reduction
 
-Thanks to currying, in Elm we can often omit function arguments in the following way:
+Thanks to currying, in Elm we can often omit function arguments:
 
     f1 x = g x      <==>  f1 = g
     f2 x = g (h x)  <==>  f2 = g << h
