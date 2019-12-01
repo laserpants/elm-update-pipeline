@@ -3,7 +3,7 @@ module Update.Pipeline exposing
     , andThen, sequence, when, kleisli
     , map2, map3, map4, map5, map6, map7, andMap
     , using, with
-    , andAddCmd, andUsing, andWith, andIf
+    , andAddCmd, andUsing, andWith, andThenIf
     )
 
 {-| Sequential composition of updates facilitated by the pipe operator.
@@ -78,7 +78,7 @@ Making the arguments implicit in this way allows the programmer to think about t
 
 # Other Shortcuts
 
-@docs andAddCmd, andUsing, andWith, andIf
+@docs andAddCmd, andUsing, andWith, andThenIf
 
 -}
 
@@ -390,7 +390,7 @@ For example;
     model
         |> when (power > 100) (setWarning Overflow)
 
-See also [`andIf`](#andIf).
+See also [`andThenIf`](#andThenIf).
 
 -}
 when :
@@ -431,13 +431,13 @@ andUsing =
 
     model
         |> save
-        |> andIf (power > 100) (setWarning Overflow)
+        |> andThenIf (power > 100) (setWarning Overflow)
 
 -}
-andIf :
+andThenIf :
     Bool
     -> (a -> ( a, Cmd msg ))
     -> ( a, Cmd msg )
     -> ( a, Cmd msg )
-andIf cond =
+andThenIf cond =
     andThen << when cond

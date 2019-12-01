@@ -427,7 +427,7 @@ testAndIf =
     let
         f x =
             save 3
-                |> andIf (x > 5) (\y -> save (y + 2))
+                |> andThenIf (x > 5) (\y -> save (y + 2))
 
         ( result1, _ ) =
             f 11
