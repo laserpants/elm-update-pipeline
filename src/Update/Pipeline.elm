@@ -25,19 +25,6 @@ These functions enable composition of updates by chaining together functions.
 
 These functions address the need to map functions with more than one parameter over `( model, Cmd msg )` inputs.
 
-    type alias Model =
-        { xxx : a
-        , yyy : a
-        , zzz : a
-        }
-
-    init : Flags -> ( Model, Cmd Msg )
-    init flags =
-        save Model
-            |> andMap xxx
-            |> andMap yyy
-            |> andMap zzz
-
 @docs map2, map3, map4, map5, map6, map7, andMap
 
 

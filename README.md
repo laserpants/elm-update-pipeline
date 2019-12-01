@@ -29,3 +29,18 @@ We use `save` to create an update without any commands, and `andThen` to extract
         model
             |> setColor Orange
             |> andThen (showToast "Color changed to orange")
+
+The applicative interface, `map2`, `map3`, etc., together with `andMap`, addresses the need to map functions with more than one parameter over `( model, Cmd msg )` input values.
+
+    type alias Model =
+        { menuOpen : Bool, session : Session, router : Router.Model }
+
+    initSession : Flags -> ( Session, Cmd Msg )
+    initSession = ...
+
+    init : Flags -> ( Model, Cmd Msg )
+    init flags =
+        save Model
+            |> andMap (save False)
+            |> andMap (initSession flags)
+            |> andMap initRouter
