@@ -44,3 +44,8 @@ The applicative interface, `map2`, `map3`, etc., together with `andMap`, address
             |> andMap (save False)
             |> andMap (initSession flags)
             |> andMap initRouter
+
+In this example, `init` can also be defined as
+
+    init flags =
+        map3 Model (save False) (initSession flags) initRouter
