@@ -38,7 +38,7 @@ Thanks to currying, in Elm we can often omit function arguments in the following
     f1 x = g x      <==>  f1 = g
     f2 x = g (h x)  <==>  f2 = g << h
 
-Making the arguments implicit in this way allows the programmer to think about the program more abstractly and can (sometimes) lead to more readable program code.
+Making the arguments implicit in this way allows the programmer to think about the program more abstractly, and can (sometimes) lead to more readable program code.
 
 
 ### Pointfree:
@@ -63,7 +63,7 @@ Making the arguments implicit in this way allows the programmer to think about t
 @docs using, with
 
 
-# Other Shortcuts
+# Shortcuts
 
 @docs andAddCmd, andUsing, andWith, andThenIf
 
@@ -186,16 +186,16 @@ map7 f a b c d e =
     ap << map6 f a b c d e
 
 
-{-| Trying to map a function `number -> number -> number` over two `( model, Cmd msg)` inputs; applying the first value
+{-| Trying to map a function `(+) : number -> number -> number` over two `( model, Cmd msg)` inputs; first applying it to the first value
 
     map (+) (save 4)
 
-we end up with a result of type `( (number -> number), Cmd msg )`.
+… we end up with a result of type `( (number -> number), Cmd msg )`.
 To apply the function inside this value to another `( number, Cmd msg )` value, we use this function in the following way:
 
     map (+) (save 4) |> andMap (save 5)
 
-in `elm repl`, we can verify that the result is what we expect:
+In `elm repl`, we can verify that the result is what we expect:
 
     > Tuple.first <| (map (+) (save 4) |> andMap (save 5))
     9 : number
@@ -225,7 +225,7 @@ join ( ( model, cmd1 ), cmd2 ) =
     )
 
 
-{-| Compare the model parts of two `( model, Cmd msg)` values.
+{-| Compare the models of two `( model, Cmd msg)` values.
 
 Note that the presence of effects means that
 
