@@ -6,7 +6,7 @@ module Update.Pipeline exposing
     , andAddCmd, andUsing, andWith
     )
 
-{-| Sequential composition of updates in the style of pipelines.
+{-| Sequential composition of updates facilitated by the pipe operator.
 
 
 # Basics
@@ -21,7 +21,7 @@ module Update.Pipeline exposing
 
 # Applicative Interface
 
-These functions address the need to map over functions with more than one parameter.
+These functions address the need to map functions with more than one parameter over `( model, Cmd msg )` inputs.
 
 @docs map2, map3, map4, map5, map6, map7, andMap
 
@@ -50,7 +50,7 @@ save model =
 
 
 {-| Apply a function to the model (i.e. first component) of a `( model, Cmd msg )` pair.
-When partially applied, we can also think of this as taking a function `a -> b` and “lifting” it into one of type `( a, Cmd msg ) -> ( b, Cmd msg )`.
+Partially applied, we can also think of this as taking a function `a -> b` and _lifting_ it into one of type `( a, Cmd msg ) -> ( b, Cmd msg )`.
 -}
 map : (a -> b) -> ( a, Cmd msg ) -> ( b, Cmd msg )
 map =
@@ -67,7 +67,7 @@ ap ( fun, cmd1 ) ( model, cmd2 ) =
     )
 
 
-{-| Combine two `( model, Cmd msg )` pairs by applying a function of two arguments
+{-| Combine two `( model, Cmd msg )` values by applying a function of two arguments
 to their respective models.
 -}
 map2 :
@@ -79,7 +79,7 @@ map2 f =
     ap << map f
 
 
-{-| Combine three `( model, Cmd msg )` pairs by applying a function of three arguments
+{-| Combine three `( model, Cmd msg )` values by applying a function of three arguments
 to their respective models.
 -}
 map3 :
@@ -92,7 +92,7 @@ map3 f a =
     ap << map2 f a
 
 
-{-| Combine four `( model, Cmd msg )` pairs by applying a function of four arguments
+{-| Combine four `( model, Cmd msg )` values by applying a function of four arguments
 to their respective models.
 -}
 map4 :
@@ -106,7 +106,7 @@ map4 f a b =
     ap << map3 f a b
 
 
-{-| Combine five `( model, Cmd msg )` pairs by applying a function of five arguments
+{-| Combine five `( model, Cmd msg )` values by applying a function of five arguments
 to their respective models.
 -}
 map5 :
@@ -121,7 +121,7 @@ map5 f a b c =
     ap << map4 f a b c
 
 
-{-| Combine six `( model, Cmd msg )` pairs by applying a function of six arguments
+{-| Combine six `( model, Cmd msg )` values by applying a function of six arguments
 to their respective models.
 -}
 map6 :
@@ -137,7 +137,7 @@ map6 f a b c d =
     ap << map5 f a b c d
 
 
-{-| Combine seven `( model, Cmd msg )` pairs by applying a function of seven arguments
+{-| Combine seven `( model, Cmd msg )` values by applying a function of seven arguments
 to their respective models.
 -}
 map7 :
@@ -181,7 +181,15 @@ andMap a b =
     ap b a
 
 
-{-| `andThen` is defined as `\f -> join << map f`.
+{-| Remove one level of structure that results from composing functions of the form `a -> ( b, Cmd msg )`:
+
+    f : a -> ( b, Cmd msg )
+    g : b -> ( c, Cmd mgs )
+
+    map g << f : a -> ( ( c, Cmd msg ), Cmd msg )
+
+It is useful to know that [`andThen`](#andThen) is defined as `\f -> join << map f`.
+
 -}
 join : ( ( a, Cmd msg ), Cmd msg ) -> ( a, Cmd msg )
 join ( ( model, cmd1 ), cmd2 ) =
@@ -190,13 +198,27 @@ join ( ( model, cmd1 ), cmd2 ) =
     )
 
 
-{-| -}
+{-|
+
+    model
+        |> setPower 100
+        |> andThen (setDone True)
+
+-}
 andThen : (b -> ( a, Cmd msg )) -> ( b, Cmd msg ) -> ( a, Cmd msg )
 andThen f =
     join << map f
 
 
-{-| -}
+{-| Right-to-left composition of two functions that return `( model, Cmd msg )` values, passing the first component of the first return value as input to the second function.
+
+This is analogous to ordinary function composition in the following way:
+
+    (<<) : (b -> c) -> (a -> b) -> a -> c
+
+    kleisli : (b -> ( c, Cmd msg )) -> (a -> ( b, Cmd msg )) -> a -> ( c, Cmd msg )
+
+-}
 kleisli :
     (b -> ( c, Cmd msg ))
     -> (a -> ( b, Cmd msg ))
@@ -206,16 +228,16 @@ kleisli f g =
     andThen f << g
 
 
-{-| -}
+{-| Take a list of `a -> ( a, Cmd msg )` functions and run them sequentially, in a left-to-right manner, with the second argument as input.
+-}
 sequence : List (a -> ( a, Cmd msg )) -> a -> ( a, Cmd msg )
 sequence list model =
     List.foldl andThen (save model) list
 
 
 {-| Create a `( model, Cmd msg)` pair from the two arguments.
-
-This function is simply defined as `addCmd cmd model = ( model, cmd )`, but it can still be pretty useful.
-For example, in idiomatic use, one could write
+This function is simply defined as `addCmd cmd model = ( model, cmd )`, but can still be quite useful in idiomatic code.
+For example, one could write
 
     { model | power = 100 }
         |> addCmd someCmd
@@ -234,14 +256,14 @@ addCmd cmd model =
     ( model, cmd )
 
 
-{-| Transform the message produced by `Cmd` part of a `( model, Cmd msg )` pair.
+{-| Transform the message produced by the command inside a `( model, Cmd msg )` pair.
 -}
 mapCmd : (msg1 -> msg2) -> ( a, Cmd msg1 ) -> ( a, Cmd msg2 )
 mapCmd =
     Tuple.mapSecond << Cmd.map
 
 
-{-| Shortcut for `andThen << addCmd`
+{-| This function is a shortcut for `andThen <<`[`addCmd`](#addCmd).
 
 Example use:
 
@@ -270,6 +292,10 @@ using fun model =
 
 
 {-| Run an update if the given condition is `True`, otherwise do nothing.
+For example;
+
+    model
+        |> when (power > 100) (setWarning Overflow)
 
 See also [`andIf`](#andIf).
 
@@ -287,7 +313,7 @@ when cond fun =
         save
 
 
-{-| Shortcut for `\view -> andThen << with view`
+{-| Shortcut for `\view -> andThen <<`[`with`](#with)`view`.
 -}
 andWith :
     (b -> c)
@@ -298,7 +324,7 @@ andWith view =
     andThen << with view
 
 
-{-| Shortcut for `andThen << using`
+{-| Shortcut for `andThen <<`[`using`](#using).
 -}
 andUsing :
     (b -> b -> ( a, Cmd msg ))
@@ -308,7 +334,12 @@ andUsing =
     andThen << using
 
 
-{-| Shortcut for `\cond -> andThen << when cond`
+{-| This function is a shortcut for `\cond -> andThen <<`[`when`](#when)`cond`.
+
+    model
+        |> save
+        |> andIf (power > 100) (setWarning Overflow)
+
 -}
 andIf :
     Bool
