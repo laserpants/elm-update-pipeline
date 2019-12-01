@@ -6,27 +6,7 @@ module Update.Pipeline exposing
     , andAddCmd, andUsing, andWith
     )
 
-{-| This module provides an interface for sequential composition of updates in the style of pipelines,
-where _monadic_ functions of the type `a -> ( b, Cmd msg )` are chained together using
-the pipes operator. For example;
-
-    update msg model =
-        case msg of
-            SomeMsg someMsg ->
-                save model
-                    |> andThen ??
-                    |> andThen (setAllDone True)
-                    |> andAddCmd someCmd
-
-It also lends itself naturally to, so called, _pointfree_ style of code:
-
-    update msg =
-        case msg of
-            SomeMsg someMsg ->
-                save
-                    >> andThen ??
-                    >> andThen (setAllDone True)
-                    >> andAddCmd someCmd
+{-| Sequential composition of updates in the style of pipelines.
 
 
 # Basics
