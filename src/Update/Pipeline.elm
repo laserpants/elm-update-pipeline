@@ -16,7 +16,7 @@ module Update.Pipeline exposing
 
 # Chaining Updates
 
-These functions enable composition of updates by chaining together functions.
+These functions enable composition of updates by chaining together functions of the type `a -> ( b, Cmd msg )`.
 
 @docs andThen, sequence, when, kleisli
 
@@ -199,6 +199,8 @@ In `elm repl`, we can verify that the result is what we expect:
 
     > Tuple.first <| (map (+) (save 4) |> andMap (save 5))
     9 : number
+
+This pattern scales in a nice way to functions of any number of arguments.
 
 See also [`map2`](#map2), [`map3`](#map3), etc. If not sooner, you’ll need this function when you want to `mapN` for _N > 7_.
 
