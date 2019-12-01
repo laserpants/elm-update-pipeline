@@ -1,5 +1,5 @@
 module Update.Pipeline exposing
-    ( save, map, addCmd, mapCmd, join
+    ( save, map, addCmd, mapCmd, join, equals
     , andThen, sequence, when, kleisli
     , map2, map3, map4, map5, map6, map7, andMap
     , using, with
@@ -11,7 +11,7 @@ module Update.Pipeline exposing
 
 # Basics
 
-@docs save, map, addCmd, mapCmd, join
+@docs save, map, addCmd, mapCmd, join, equals
 
 
 # Chaining Updates
@@ -238,6 +238,24 @@ join ( ( model, cmd1 ), cmd2 ) =
     )
 
 
+{-| Compare the model parts of two `( model, Cmd msg)` values.
+
+Note that the presence of effects means that
+
+    > (save 9) == (map2 (^) (save 3) (save 2))
+    False : Bool
+
+This function can be used for comparison when only the model is of interest:
+
+    > equals (save 9) (map2 (^) (save 3) (save 2))
+    True : Bool
+
+-}
+equals : ( a, Cmd msg ) -> ( a, Cmd msg ) -> Bool
+equals ( a, _ ) ( b, _ ) =
+    a == b
+
+
 {-| When used in conjunction with the pipe operator, this combinator extracts the model from a `( model, Cmd msg )` value and passes it as input to the next function in a pipeline.
 For example;
 
@@ -280,7 +298,7 @@ sequence list model =
 
 
 {-| Create a `( model, Cmd msg)` pair from the two arguments.
-The implementation of this function is not very exciting — it is simply defined as `addCmd cmd model = ( model, cmd )`, but it can still be quite useful in idiomatic code.
+The implementation of this function is not very exciting — it is simply defined as `addCmd cmd model = ( model, cmd )` — but it can still be quite useful in idiomatic code.
 For example, one could write
 
     { model | power = 100 }
