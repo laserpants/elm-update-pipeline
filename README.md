@@ -3,8 +3,8 @@
 [![Build Status](https://img.shields.io/travis/laserpants/elm-update-pipeline/master.svg?style=flat)](https://travis-ci.org/laserpants/elm-update-pipeline)
 [![Version](https://img.shields.io/badge/elm--version-0.19-blue.svg?colorB=ff69b4)](http://elm-lang.org/)
 
-A library for sequential composition of updates in the convenient style of _pipelines_,
-where functions are chained together using the pipe operator. For example;
+A library for sequential composition of updates in the convenient style of _pipelines_, where functions are chained together using the pipe operator.
+For example;
 
 ```elm
 update msg model =
@@ -15,7 +15,7 @@ update msg model =
                 |> andAddCmd someCmd
 ```
 
-Monadic functions of type `a -> ( b, Cmd msg )` are the building blocks of a pipeline.
+Monadic functions of type `a -> ( b, Cmd msg )` form the building blocks of a pipeline.
 We use `save` to create an update without any commands, and `andThen` to extract the model from a result and pass it as input to the next function in the pipeline.
 
 ```elm
