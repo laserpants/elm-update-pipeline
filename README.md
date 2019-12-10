@@ -33,7 +33,7 @@ update msg model =
         |> andThen (showToast "Color changed to orange")
 ```
 
-The applicative interface, `map2`, `map3`, etc., together with `andMap`, addresses the need to map functions with more than one parameter over `( model, Cmd msg )` input values.
+The applicative interface, `map2`, `map3`, etc., together with `andMap`, addresses the need to map functions with more than one parameter over `( model, Cmd msg )` inputs.
 
 ```elm
 type alias Model =
