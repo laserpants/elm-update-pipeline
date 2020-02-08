@@ -1,20 +1,13 @@
-module Update.Pipeline.Extended exposing 
+module Update.Pipeline.Extended exposing
     ( Extended, Stack, Run
-    , extend
-    , mapE
-    , mapE2
-    , mapE3
-    , lift
-    , lift2
-    , lift3
+    , extend, mapE, mapE2, mapE3
+    , lift, lift2, lift3
     , call
-    , sequenceCalls
-    , runStack
-    , runStackE
+    , sequenceCalls, runStack, runStackE
     , andCall, andLift
     )
 
-{-| TODO
+{-| This module extends the _ for working with pipelines, introducing a simple callback mechanism which allows information to be passed up in the update hierarchy.
 
 
 # Types
@@ -22,9 +15,24 @@ module Update.Pipeline.Extended exposing
 @docs Extend, Stack, Run
 
 
-# Basics
+# Functor
 
-@docs extend, mapE, mapE2, mapE3, lift, lift2, lift3, call, sequenceCalls, runStack, runStackE 
+@docs extend, mapE, mapE2, mapE3
+
+
+# Traversing
+
+@docs lift, lift2, lift3
+
+
+# Hello
+
+@docs call
+
+
+# What
+
+#docs sequenceCalls, runStack, runStackE
 
 
 # Shortcuts
@@ -38,14 +46,16 @@ import Tuple exposing (mapFirst)
 import Update.Pipeline exposing (andThen, mapCmd, save, sequence)
 
 
-{- | TODO
+{- | A data type that encapsulates a model of type `m` together with a list of callbacks
+`m -> ( m, Cmd msg )`
+????
 
 -}
 type alias Extended m a =
     ( m, List a )
 
 
-{- | TODO
+{- | Create an extended model without any callbacks.
 
 -}
 extend : a -> Extended a c
@@ -58,7 +68,7 @@ shuffle ( ( model, cmd ), calls ) =
     ( ( model, calls ), cmd )
 
 
-{- | TODO
+{- | Apply a function to the model
 
 -}
 mapE : (a -> b) -> Extended a c -> Extended b c
@@ -66,7 +76,7 @@ mapE f ( x, calls ) =
     ( f x, calls )
 
 
-{- | TODO
+{- | A version of `[`mapE`](#mapE) for functions of two arguments.
 
 -}
 mapE2 : (a -> b -> c) -> Extended a d -> Extended b d -> Extended c d
@@ -74,7 +84,7 @@ mapE2 f ( x, calls1 ) ( y, calls2 ) =
     ( f x y, calls1 ++ calls2 )
 
 
-{- | TODO
+{- | A version of `[`mapE`](#mapE) for functions of three arguments.
 
 -}
 mapE3 : (a -> b -> c -> d) -> Extended a e -> Extended b e -> Extended c e -> Extended d e
@@ -82,9 +92,12 @@ mapE3 f ( x, calls1 ) ( y, calls2 ) ( z, calls3 ) =
     ( f x y z, calls1 ++ calls2 ++ calls3 )
 
 
-{- | TODO
+{- | Take an effectful update function `(a -> ( b, Cmd msg ))` and transform it into one that instead acts on an extended model of type `Extended a c`.
 
-This function behaves like mapM (or traverse) in Haskell.
+Aside: This function behaves like mapM (or traverse) in Haskell
+in a way consistent with
+the _ of updates being monadic functions of the type `a -> ( a, Cmd msg )`.
+
 
 -}
 lift :
@@ -95,7 +108,7 @@ lift fun a =
     shuffle (mapE fun a)
 
 
-{- | TODO
+{- | A version of `[`lift`](#lift) for functions of two arguments.
 
 -}
 lift2 :
@@ -107,7 +120,7 @@ lift2 fun a b =
     shuffle (mapE2 fun a b)
 
 
-{- | TODO
+{- | A version of `[`lift`](#lift) for functions of three arguments.
 
 -}
 lift3 :
@@ -165,7 +178,7 @@ type alias Stack m m1 msg msg1 a =
     Extended m1 a -> ( Extended m1 (m -> ( m, Cmd msg )), Cmd msg1 )
 
 
-{- | TODO
+{- | A type alias that helps making type signature less verbose in library code.
 
 -}
 type alias Run m m1 msg msg1 a =
@@ -188,7 +201,7 @@ run fun get set toMsg stack model =
         |> andThen (fun >> sequenceCalls)
 
 
-{- | TODO
+{- | A version of `[`runStack`](#runStack) that ...
 
 -}
 runStackE :
