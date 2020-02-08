@@ -354,16 +354,16 @@ with view fun =
 
 Consider the following example:
 
-    goToPage : Int -> Model -> ( Model, Cmd msg )
-    goToPage = ...
+    gotoPage : Int -> Model -> ( Model, Cmd msg )
+    gotoPage = ...
 
     nextPage model =
-        goToPage (model.currentPage + 1) model
+        gotoPage (model.currentPage + 1) model
 
 Using this helper, the above code can be refactored as
 
     nextPage =
-        using (\{ currentPage } -> goToPage (currentPage + 1))
+        using (\{ currentPage } -> gotoPage (currentPage + 1))
 
 See also [`with`](#with), [`andUsing`](#andUsing).
 
