@@ -6,8 +6,12 @@ module Update.Pipeline.Extended exposing
     , andCall, andLift
     )
 
-{-| This module introduces a simple callback mechanism that enables information to be passed upwards in the hierarchy.
+{-| This module introduces a simple callback mechanism that enables information to be passed upwards in the model hierarchy.
 The pattern is similar to callback-based event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener responds to state changes by hooking into the event source via one or more callbacks (event handlers).
+
+## How to use:
+
+### Example:
 
     handleSuccess : List Post -> Model -> ( Model, Cmd Msg )
     handleSuccess = ...
@@ -147,7 +151,7 @@ andLift =
 
 addCalls : List c -> Extended a c -> ( Extended a c, Cmd msg )
 addCalls calls1 ( model, calls ) =
-    save ( model, calls1 ++ calls )
+    save ( model, calls ++ calls1 )
 
 
 {-| Invoke a callback
