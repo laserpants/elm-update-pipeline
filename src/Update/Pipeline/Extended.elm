@@ -10,9 +10,163 @@ module Update.Pipeline.Extended exposing
 The pattern is similar to callback-based event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener can respond to state changes by hooking into the event source via one or more callbacks (event handlers).
 
 
-### Basic use:
+## Usage example:
 
-abc
+The following program shows how to use the [`Extended`](#Extended) type alias and [`runStack`](#runStack) to implement an `update` function that takes one or more callbacks.
+Scroll down for explanation.
+
+    module Main exposing (..)
+
+    import Browser exposing (Document, document)
+    import Html exposing (Html, button, span, text)
+    import Html.Attributes as Attributes
+    import Html.Events exposing (onClick)
+    import Update.Pipeline exposing (..)
+    import Update.Pipeline.Extended exposing (..)
+
+    type ChildMsg
+        = OnClick Bool
+
+    type alias Child =
+        {}
+
+    initChild : ( Child, Cmd ChildMsg )
+    initChild =
+        save {}
+
+    {- #1 -}
+    updateChild :
+        ChildMsg
+        -> { onClick : Bool -> a }
+        -> Extended Child a
+        -> ( Extended Child a, Cmd ChildMsg )
+    updateChild msg { onClick } model =
+        case msg of
+            OnClick choice ->
+                model
+                    |> call (onClick choice)
+
+    viewChild : Child -> Html ChildMsg
+    viewChild _ =
+        span []
+            [ button
+                [ onClick (OnClick True) ]
+                [ text "Yay" ]
+            , button
+                [ onClick (OnClick False) ]
+                [ text "Nay" ]
+            ]
+
+    type Msg
+        = ChildMsg ChildMsg
+
+    type alias Parent =
+        { child : Child
+        , clicked : Bool
+        , choice : Maybe Bool
+        }
+
+    insertAsChildIn : Parent -> Child -> ( Parent, Cmd Msg )
+    insertAsChildIn model child =
+        save { model | child = child }
+
+    {- #2 -}
+    inChild : Run Parent Child Msg ChildMsg a
+    inChild =
+        runStack .child insertAsChildIn ChildMsg
+
+    init : () -> ( Parent, Cmd Msg )
+    init () =
+        map3 Parent
+            (mapCmd ChildMsg initChild)
+            (save False)
+            (save Nothing)
+
+    {- #3 -}
+    handleClick :
+        Bool
+        -> Parent
+        -> ( Parent, Cmd Msg )
+    handleClick choice model =
+        save
+            { model
+                | clicked = True
+                , choice = Just choice
+            }
+
+    update : Msg -> Parent -> ( Parent, Cmd Msg )
+    update msg model =
+        case msg of
+            ChildMsg childMsg ->
+                {- #4 -}
+                model
+                    |> inChild
+                        (updateChild childMsg
+                            { onClick = handleClick }
+                        )
+
+    subscriptions : Parent -> Sub Msg
+    subscriptions _ =
+        Sub.none
+
+    view : Parent -> Document Msg
+    view { child, clicked, choice } =
+        { title = ""
+        , body =
+            [ if clicked then
+                let
+                    choiceStr =
+                        case choice of
+                            Just True ->
+                                "yay"
+
+                            _ ->
+                                "nay"
+                in
+                text ("You chose " ++ choiceStr ++ "!")
+
+              else
+                Html.map ChildMsg (viewChild child)
+            ]
+        }
+
+    main : Program () Parent Msg
+    main =
+        document
+            { init = init
+            , update = update
+            , subscriptions = subscriptions
+            , view = view
+            }
+
+
+### Explanation:
+
+1.  This `update` function is atypical in the following two ways:
+      - Instead of
+
+            m -> ( m, Cmd msg )
+
+        … we write
+
+            Extended m a -> ( Extended m a, Cmd msg )
+
+      - The second argument is a record containing a callback
+
+            onClick : Bool -> a
+
+        In general, we can have any number of these functions. The type of a callback is always of the form
+
+            arg1 -> arg2 -> ... -> a
+
+2.  Partially applied, [`runStack`](#runStack) gives us a function that takes care of updating the nested `Child` model.
+    We provide `runStack` with a getter (`.child`), a setter (`insertAsChildIn`), and the `Msg` constructor.
+
+    The actual type of the resulting function is slightly complicated, so we'll typically use the [`Run`](#Run) alias to make things more readable.
+
+3.  The handler is call
+
+4.  In the parent model's update function,
 
 
 # Types
@@ -25,7 +179,7 @@ abc
 @docs call, sequenceCalls, runStack, runStackE
 
 
-# Functor and Applicative Interface
+# Functor Interface
 
 @docs extend, mapE, mapE2, mapE3
 
@@ -84,11 +238,11 @@ mapE3 f ( x, calls1 ) ( y, calls2 ) ( z, calls3 ) =
     ( f x y z, calls1 ++ calls2 ++ calls3 )
 
 
-{-| Take an effectful update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on an `Extended a c` value.
+{-| Take an effectful update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on an `Extended a *` value.
 
-_Aside:_ This function behaves just like mapM (or traverse) in Haskell,
-building on the idea of updates (`a -> ( b, Cmd msg )`) being monadic functions.
-monadic value comes into form of a model-cmd pair:
+_Aside:_ This function behaves just like mapM (or traverse) in Haskell, when we consider updates (`a -> ( b, Cmd msg )`) being monadic functions.
+
+See also [`andLift`](#andLift).
 
 -}
 lift :
@@ -138,6 +292,9 @@ addCalls calls1 ( model, calls ) =
 
 
 {-| Invoke a callback in an update function that returns an `( Extended a c, Cmd msg )` value.
+
+See also [`andCall`](#andCall).
+
 -}
 call : c -> Extended a c -> ( Extended a c, Cmd msg )
 call =
