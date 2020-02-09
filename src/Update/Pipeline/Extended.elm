@@ -1,35 +1,18 @@
 module Update.Pipeline.Extended exposing
     ( Extended, Stack, Run
+    , call, sequenceCalls, runStack, runStackE
     , extend, mapE, mapE2, mapE3
     , lift, lift2, lift3
-    , call, sequenceCalls, runStack, runStackE
     , andCall, andLift
     )
 
-{-| This module introduces a simple callback mechanism that enables information to be passed upwards in the model hierarchy.
-The pattern is similar to callback-based event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener responds to state changes by hooking into the event source via one or more callbacks (event handlers).
+{-| This module introduces a simple callback mechanism that enables information to be passed upwards in the model-update hierarchy.
+The pattern is similar to callback-based event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener can respond to state changes by hooking into the event source via one or more callbacks (event handlers).
 
-## How to use:
 
-### Example:
+### Basic use:
 
-    handleSuccess : List Post -> Model -> ( Model, Cmd Msg )
-    handleSuccess = ...
-
-    handleError : Http.Error -> Model -> ( Model, Cmd Msg )
-    handleError = ...
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ApiMsg apiMsg ->
-                model
-                    |> inApiModel
-                          (Api.update apiMsg
-                              { onSuccess = handleSuccess
-                              , onError = handleError
-                              }
-                          )
+abc
 
 
 # Types
@@ -37,7 +20,12 @@ The pattern is similar to callback-based event handling in object-oriented langu
 @docs Extended, Stack, Run
 
 
-# Mapping
+# Program Integration
+
+@docs call, sequenceCalls, runStack, runStackE
+
+
+# Functor and Applicative Interface
 
 @docs extend, mapE, mapE2, mapE3
 
@@ -45,11 +33,6 @@ The pattern is similar to callback-based event handling in object-oriented langu
 # Traversing
 
 @docs lift, lift2, lift3
-
-
-# Hello
-
-@docs call, sequenceCalls, runStack, runStackE
 
 
 # Shortcuts
@@ -62,7 +45,7 @@ import Tuple exposing (mapFirst)
 import Update.Pipeline exposing (andThen, mapCmd, save, sequence)
 
 
-{-| An _extended_ model is a model paired with a list of callbacks — functions that
+{-| An _extended_ model is a model paired with a list of _callbacks_ — functions that are applied to the parent model after an update.
 -}
 type alias Extended m a =
     ( m, List a )
@@ -104,7 +87,7 @@ mapE3 f ( x, calls1 ) ( y, calls2 ) ( z, calls3 ) =
 {-| Take an effectful update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on an `Extended a c` value.
 
 _Aside:_ This function behaves just like mapM (or traverse) in Haskell,
-This is consistent with the \_ of updates being monadic functions of the type `a -> ( b, Cmd msg )`.
+building on the idea of updates (`a -> ( b, Cmd msg )`) being monadic functions.
 monadic value comes into form of a model-cmd pair:
 
 -}
@@ -154,7 +137,7 @@ addCalls calls1 ( model, calls ) =
     save ( model, calls ++ calls1 )
 
 
-{-| Invoke a callback
+{-| Invoke a callback in an update function that returns an `( Extended a c, Cmd msg )` value.
 -}
 call : c -> Extended a c -> ( Extended a c, Cmd msg )
 call =
@@ -168,20 +151,28 @@ andCall =
     andThen << call
 
 
-{-| TODO
+{-| Compose and apply the list of monadic functions (callbacks) accumulated by a nested update call.
+See also [`sequence`](Update.Pipeline#sequence). This function is identical to:
+
+    uncurry (flip sequence)
+
+Usually it shouldn't be necessary to use this function directly in client code.
+Instead, see [`runStack`](#runStack).
+
 -}
 sequenceCalls : Extended a (a -> ( a, Cmd msg )) -> ( a, Cmd msg )
 sequenceCalls ( model, calls ) =
     sequence calls model
 
 
-{-| TODO
+{-| Represents an update where callbacks may be present.
 -}
 type alias Stack m m1 msg msg1 a =
     Extended m1 a -> ( Extended m1 (m -> ( m, Cmd msg )), Cmd msg1 )
 
 
-{-| An alias that helps making type signatures a lot less verbose in client code.
+{-| An alias that helps making type signatures less verbose in client code.
+See [`runStack`](#runStack) for an example of how to use this type alias.
 -}
 type alias Run m m1 msg msg1 a =
     Stack m m1 msg msg1 a -> m -> ( m, Cmd msg )
@@ -219,6 +210,27 @@ runStackE g s m stack ( model, calls ) =
 
 
 {-| TODO
+
+
+#### _Example:_
+
+    type Msg
+        = ChildMsg ChildMsg
+
+    type alias Parent =
+        { child : Child
+        }
+
+    inChildModel : Run Parent Child Msg ChildMsg a
+    inChildModel =
+        runStack .child (\m child -> save { m | child = child }) ChildMsg
+
+    update : Msg -> Parent -> ( Parent, Cmd Msg )
+    update msg model =
+        case msg of
+            ChildMsg childMsg ->
+                inChildModel (updateChild childMsg)
+
 -}
 runStack :
     (a -> m1)

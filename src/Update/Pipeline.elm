@@ -316,7 +316,8 @@ mapCmd =
 
 {-| This function is a shortcut for `andThen <<`[`addCmd`](#addCmd).
 
-Example use:
+
+#### _Example use:_
 
     model
         |> save
