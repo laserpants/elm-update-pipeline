@@ -17,10 +17,10 @@ testExtend =
             extend model
     in
     describe "extend"
-        [ test "expect 5 to appear in tuple" <|
-            \_ -> Expect.equal model newModel
-        , test "expect no calls" <|
-            \_ -> Expect.equal [] calls
+        [ test "expect 5 to appear in tuple"
+            (\_ -> Expect.equal model newModel)
+        , test "expect no calls"
+            (\_ -> Expect.equal [] calls)
         ]
 
 
@@ -34,8 +34,8 @@ testMapE =
             mapE ((+) 1) (extend model)
     in
     describe "mapE"
-        [ test "expect value in tuple to increment by 1" <|
-            \_ -> Expect.equal newModel (model + 1)
+        [ test "expect value in tuple to increment by 1"
+            (\_ -> Expect.equal newModel (model + 1))
         ]
 
 
@@ -55,8 +55,8 @@ testMapE2 =
             mapE2 fun (extend a) (extend b)
     in
     describe "mapE2"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b))
         ]
 
 
@@ -79,8 +79,8 @@ testMapE3 =
             mapE3 fun (extend a) (extend b) (extend c)
     in
     describe "mapE3"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c))
         ]
 
 
@@ -94,8 +94,8 @@ testLift =
             lift fun (extend 3)
     in
     describe "lift"
-        [ test "todo" <|
-            \_ -> Expect.equal val (extend 5)
+        [ test "expect lift to preserve behavior of original function"
+            (\_ -> Expect.equal val (extend 5))
         ]
 
 
@@ -109,8 +109,8 @@ testLift2 =
             lift2 fun (extend 5) (extend 8)
     in
     describe "lift2"
-        [ test "todo" <|
-            \_ -> Expect.equal val (extend 13)
+        [ test "expect lift2 to preserve behavior of original function"
+            (\_ -> Expect.equal val (extend 13))
         ]
 
 
@@ -124,8 +124,8 @@ testLift3 =
             lift3 fun (extend 5) (extend 8) (extend 2)
     in
     describe "lift3"
-        [ test "todo" <|
-            \_ -> Expect.equal val (extend 21)
+        [ test "expect lift3 to preserve behavior of original function"
+            (\_ -> Expect.equal val (extend 21))
         ]
 
 
@@ -140,8 +140,8 @@ testAndLift =
                 |> andThen (lift fun)
     in
     describe "andLift"
-        [ test "todo" <|
-            \_ -> Expect.equal val (extend 10)
+        [ test "expect andLift to preserve behavior of original function"
+            (\_ -> Expect.equal val (extend 10))
         ]
 
 
@@ -153,8 +153,8 @@ testCall =
                 |> call (save 2)
     in
     describe "call"
-        [ test "todo" <|
-            \_ -> Expect.equal result ( 1, [ save 2 ] )
+        [ test "expect call to add function to list of callbacks"
+            (\_ -> Expect.equal result ( 1, [ save 2 ] ))
         ]
 
 
@@ -167,8 +167,8 @@ testAndCall =
                 |> andCall (save 2)
     in
     describe "andCall"
-        [ test "todo" <|
-            \_ -> Expect.equal result ( 1, [ save 2 ] )
+        [ test "expect andCall to add function to list of callbacks"
+            (\_ -> Expect.equal result ( 1, [ save 2 ] ))
         ]
 
 
@@ -190,8 +190,8 @@ testSequenceCalls =
                 |> andThen sequenceCalls
     in
     describe "sequenceCalls"
-        [ test "todo" <|
-            \_ -> Expect.equal result 9
+        [ test "expected sequenceCalls to apply callbacks to parent model"
+            (\_ -> Expect.equal result 9)
         ]
 
 
@@ -223,8 +223,8 @@ testRunStack =
             update1 () { m = { count = 1 } }
     in
     describe "runStack"
-        [ test "todo" <|
-            \_ -> Expect.equal m.count 2
+        [ test "expect runStack to update nested model"
+            (\_ -> Expect.equal m.count 2)
         ]
 
 
@@ -246,8 +246,8 @@ testRunStackE =
             update1 () (extend { m = { count = 1 } })
     in
     describe "runStackE"
-        [ test "todo" <|
-            \_ -> Expect.equal m.count 4
+        [ test "expect runStackE to update nested model"
+            (\_ -> Expect.equal m.count 4)
         ]
 
 

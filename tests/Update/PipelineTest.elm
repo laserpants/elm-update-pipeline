@@ -16,10 +16,10 @@ testPure =
             save model
     in
     describe "save"
-        [ test "expect 5 to appear in tuple" <|
-            \_ -> Expect.equal model newModel
-        , test "expect no command" <|
-            \_ -> Expect.equal Cmd.none cmd
+        [ test "expect 5 to appear in tuple"
+            (\_ -> Expect.equal model newModel)
+        , test "expect no command"
+            (\_ -> Expect.equal Cmd.none cmd)
         ]
 
 
@@ -33,8 +33,8 @@ testMap =
             map ((+) 1) (save model)
     in
     describe "map"
-        [ test "expect value in tuple to increment by 1" <|
-            \_ -> Expect.equal newModel (model + 1)
+        [ test "expect value in tuple to increment by 1"
+            (\_ -> Expect.equal newModel (model + 1))
         ]
 
 
@@ -54,8 +54,8 @@ testMap2 =
             map2 fun (save a) (save b)
     in
     describe "map2"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b))
         ]
 
 
@@ -78,8 +78,8 @@ testMap3 =
             map3 fun (save a) (save b) (save c)
     in
     describe "map3"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c))
         ]
 
 
@@ -105,8 +105,8 @@ testMap4 =
             map4 fun (save a) (save b) (save c) (save d)
     in
     describe "map4"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c d)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c d))
         ]
 
 
@@ -135,8 +135,8 @@ testMap5 =
             map5 fun (save a) (save b) (save c) (save d) (save e)
     in
     describe "map5"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c d e)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c d e))
         ]
 
 
@@ -168,8 +168,8 @@ testMap6 =
             map6 fun (save a) (save b) (save c) (save d) (save e) (save f)
     in
     describe "map6"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c d e f)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c d e f))
         ]
 
 
@@ -204,8 +204,8 @@ testMap7 =
             map7 fun (save a) (save b) (save c) (save d) (save e) (save f) (save g)
     in
     describe "map7"
-        [ test "expect result to match unlifted version of function" <|
-            \_ -> Expect.equal result (fun a b c d e f g)
+        [ test "expect result to match unlifted version of function"
+            (\_ -> Expect.equal result (fun a b c d e f g))
         ]
 
 
@@ -234,8 +234,8 @@ testAndMap =
                 |> andMap (save d)
     in
     describe "andMap"
-        [ test "expect result to appear in first component" <|
-            \_ -> Expect.equal result (f a b c d)
+        [ test "expect result to appear in first component"
+            (\_ -> Expect.equal result (f a b c d))
         ]
 
 
@@ -246,8 +246,8 @@ testJoin =
             join (save (save 5))
     in
     describe "join"
-        [ test "expect 5 to appear in tuple" <|
-            \_ -> Expect.equal newModel 5
+        [ test "expect 5 to appear in tuple"
+            (\_ -> Expect.equal newModel 5)
         ]
 
 
@@ -263,8 +263,8 @@ testAndThen =
                 |> andThen incrementValue
     in
     describe "andThen"
-        [ test "expect the pipeline to return 7" <|
-            \_ -> Expect.equal result 8
+        [ test "expect the pipeline to return 7"
+            (\_ -> Expect.equal result 8)
         ]
 
 
@@ -284,8 +284,8 @@ testKleisli =
             h 10
     in
     describe "kleisli"
-        [ test "expect the result to be " <|
-            \_ -> Expect.equal result (10 / 2 + 8)
+        [ test "expect the result to be "
+            (\_ -> Expect.equal result (10 / 2 + 8))
         ]
 
 
@@ -309,10 +309,10 @@ testSequence =
             sequence cmd2 8
     in
     describe "sequence"
-        [ test "expect the result to be 3" <|
-            \_ -> Expect.equal result1 3
-        , test "expect the result of 8/2+1 to be 5" <|
-            \_ -> Expect.equal result2 5
+        [ test "expect the result to be 3"
+            (\_ -> Expect.equal result1 3)
+        , test "expect the result of 8/2+1 to be 5"
+            (\_ -> Expect.equal result2 5)
         ]
 
 
@@ -327,8 +327,8 @@ testAddCmd =
                 |> addCmd cmd
     in
     describe "addCmd"
-        [ test "expect cmd to appear in tuple" <|
-            \_ -> Expect.equal newCmd cmd
+        [ test "expect cmd to appear in tuple"
+            (\_ -> Expect.equal newCmd cmd)
         ]
 
 
@@ -344,8 +344,8 @@ testWith =
             with .this (\str rec -> { rec | wat = str ++ "hat" }) record
     in
     describe "with"
-        [ test "expect second field to be concatenate string" <|
-            \_ -> Expect.equal result.wat "thathat"
+        [ test "expect second field to be concatenate string"
+            (\_ -> Expect.equal result.wat "thathat")
         ]
 
 
@@ -361,8 +361,8 @@ testUsing =
             using (\{ this } _ -> this ++ "hat") record
     in
     describe "using"
-        [ test "expect the result to concatenated string" <|
-            \_ -> Expect.equal result "thathat"
+        [ test "expect the result to concatenated string"
+            (\_ -> Expect.equal result "thathat")
         ]
 
 
@@ -379,10 +379,10 @@ testWhen =
             f 4 3
     in
     describe "when"
-        [ test "expect the result to be 4" <|
-            \_ -> Expect.equal result1 4
-        , test "expect the result to be 3" <|
-            \_ -> Expect.equal result2 3
+        [ test "expect the result to be 4"
+            (\_ -> Expect.equal result1 4)
+        , test "expect the result to be 3"
+            (\_ -> Expect.equal result2 3)
         ]
 
 
@@ -399,8 +399,8 @@ testAndWith =
                 |> andWith .this (\str rec -> save { rec | wat = str ++ "hat" })
     in
     describe "andWith"
-        [ test "expect second field to be concatenate string" <|
-            \_ -> Expect.equal result.wat "thathat"
+        [ test "expect second field to be concatenate string"
+            (\_ -> Expect.equal result.wat "thathat")
         ]
 
 
@@ -417,8 +417,8 @@ testAndUsing =
                 |> andUsing (\{ this } _ -> save (this ++ "hat"))
     in
     describe "andUsing"
-        [ test "expect the result to concatenated string" <|
-            \_ -> Expect.equal result "thathat"
+        [ test "expect the result to concatenated string"
+            (\_ -> Expect.equal result "thathat")
         ]
 
 
@@ -436,10 +436,10 @@ testAndIf =
             f 4
     in
     describe "testAndIf"
-        [ test "expect the result to be 5" <|
-            \_ -> Expect.equal result1 5
-        , test "expect the result to be 3" <|
-            \_ -> Expect.equal result2 3
+        [ test "expect the result to be 5"
+            (\_ -> Expect.equal result1 5)
+        , test "expect the result to be 3"
+            (\_ -> Expect.equal result2 3)
         ]
 
 
