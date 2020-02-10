@@ -145,7 +145,7 @@ Scroll down for explanations of the indicated points in the code.
 1.  The update function is atypical in the following ways:
       - Instead of the usual
 
-            m -> ( m, Cmd msg )
+            msg -> m -> ( m, Cmd msg )
 
         … we change the type so that it ends with
 
@@ -159,13 +159,13 @@ Scroll down for explanations of the indicated points in the code.
 
             arg1 -> arg2 -> ... -> a
 
-2.  Using [`call`](#call), we add a function to the list of callbacks which is eventually returned together with the model. Think of this as invoking the callback.
+2.  Using [`call`](#call), we add a function to the list of callbacks, which is eventually returned together with the model. Think of this simply as invoking the callback.
 
 3.  Partially applied, [`runStack`](#runStack) gives us a function that takes care of updating the nested `Feature` model in a way that also accommodates for the extra callback structure.
     The actual type of the resulting function is slightly complicated, so we’ll typically use the [`Run`](#Run) alias to make things more readable.
 
 4.  The handler’s type has to match that of the callback.
-    The type parameter `a` is expanded to `m -> ( m, Cmd msg )`, where `m` is the actual type of the parent model.
+    The type parameter `a` is expanded to `m -> ( m, Cmd msg )`, where `m` is the type of the parent model.
     So, in this example
 
         Bool -> a
@@ -240,7 +240,7 @@ mapE3 f ( x, calls1 ) ( y, calls2 ) ( z, calls3 ) =
 
 {-| Take an _effectful_ update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on `Extended a c` values and returns an `( Extended b c, Cmd msg )` pair.
 
-_Aside:_ This function behaves like `traverse` in the Traversable type class in Haskell, when we think of updates (`a -> ( b, Cmd msg )`) as the monadic function `a -> m b`.
+_Aside:_ This function behaves like `traverse` in the Traversable type class in Haskell, when we think of updates (`a -> ( b, Cmd msg )`) as monadic functions `a -> m b`.
 
 See also [`andLift`](#andLift).
 
