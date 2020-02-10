@@ -5,15 +5,14 @@ module Update.Pipeline.Extended exposing
     , andCall, andLift
     )
 
-{-| This module introduces a simple callback utility that enables information to be passed upwards in the model-update hierarchy.
-The pattern is similar to event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener is able to respond to state changes by hooking into the event source via one or more callbacks (event handlers).
+{-| This module introduces a simple utility that enables information to be passed upwards in the model-update hierarchy.
+The pattern is similar to event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener is then able to respond to state changes by hooking into the event source via one or more _callbacks_ (event handlers).
 
 
 ## Usage example:
 
-The below example shows how to use the [`Extended`](#Extended) type alias and [`runStack`](#runStack) to implement an `update` function which supports callbacks.
-
-Scroll down for a more detailed explanation.
+The below example shows how to use the [`Extended`](#Extended) type alias together with [`runStack`](#runStack) to implement an update function with support for callbacks.
+Scroll down for explanations of the indicated points in the code.
 
     module Main exposing (..)
 
@@ -24,31 +23,31 @@ Scroll down for a more detailed explanation.
     import Update.Pipeline exposing (..)
     import Update.Pipeline.Extended exposing (..)
 
-    type ChildMsg
+    type FeatureMsg
         = OnClick Bool
 
-    type alias Child =
+    type alias Feature =
         {}
 
-    initChild : ( Child, Cmd ChildMsg )
-    initChild =
+    initFeature : ( Feature, Cmd FeatureMsg )
+    initFeature =
         save {}
 
     {- #1 -}
-    updateChild :
-        ChildMsg
+    updateFeature :
+        FeatureMsg
         -> { onClick : Bool -> a }
-        -> Extended Child a
-        -> ( Extended Child a, Cmd ChildMsg )
-    updateChild msg { onClick } model =
+        -> Extended Feature a
+        -> ( Extended Feature a, Cmd FeatureMsg )
+    updateFeature msg { onClick } model =
         case msg of
             OnClick choice ->
                 {- #2 -}
                 model
                     |> call (onClick choice)
 
-    viewChild : Child -> Html ChildMsg
-    viewChild _ =
+    viewFeature : Feature -> Html FeatureMsg
+    viewFeature _ =
         span []
             [ button
                 [ onClick (OnClick True) ]
@@ -59,35 +58,35 @@ Scroll down for a more detailed explanation.
             ]
 
     type Msg
-        = ChildMsg ChildMsg
+        = FeatureMsg FeatureMsg
 
-    type alias Parent =
-        { child : Child
+    type alias Model =
+        { feature : Feature
         , clicked : Bool
         , choice : Maybe Bool
         }
 
-    insertAsChildIn : Parent -> Child -> ( Parent, Cmd Msg )
-    insertAsChildIn model child =
-        save { model | child = child }
+    insertAsFeatureIn : Model -> Feature -> ( Model, Cmd Msg )
+    insertAsFeatureIn model feature =
+        save { model | feature = feature }
 
     {- #3 -}
-    inChild : Run Parent Child Msg ChildMsg a
-    inChild =
-        runStack .child insertAsChildIn ChildMsg
+    inFeature : Run Model Feature Msg FeatureMsg a
+    inFeature =
+        runStack .feature insertAsFeatureIn FeatureMsg
 
-    init : () -> ( Parent, Cmd Msg )
+    init : () -> ( Model, Cmd Msg )
     init () =
-        map3 Parent
-            (mapCmd ChildMsg initChild)
+        map3 Model
+            (mapCmd FeatureMsg initFeature)
             (save False)
             (save Nothing)
 
     {- #4 -}
     handleClick :
         Bool
-        -> Parent
-        -> ( Parent, Cmd Msg )
+        -> Model
+        -> ( Model, Cmd Msg )
     handleClick choice model =
         save
             { model
@@ -95,23 +94,23 @@ Scroll down for a more detailed explanation.
                 , choice = Just choice
             }
 
-    update : Msg -> Parent -> ( Parent, Cmd Msg )
+    update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            ChildMsg childMsg ->
+            FeatureMsg featureMsg ->
                 {- #5 -}
                 model
-                    |> inChild
-                        (updateChild childMsg
+                    |> inFeature
+                        (updateFeature featureMsg
                             { onClick = handleClick }
                         )
 
-    subscriptions : Parent -> Sub Msg
+    subscriptions : Model -> Sub Msg
     subscriptions _ =
         Sub.none
 
-    view : Parent -> Document Msg
-    view { child, clicked, choice } =
+    view : Model -> Document Msg
+    view { feature, clicked, choice } =
         { title = ""
         , body =
             [ if clicked then
@@ -127,11 +126,11 @@ Scroll down for a more detailed explanation.
                 text ("You chose " ++ choiceStr ++ "!")
 
               else
-                Html.map ChildMsg (viewChild child)
+                Html.map FeatureMsg (viewFeature feature)
             ]
         }
 
-    main : Program () Parent Msg
+    main : Program () Model Msg
     main =
         document
             { init = init
@@ -143,8 +142,8 @@ Scroll down for a more detailed explanation.
 
 ### Explanation:
 
-1.  This `update` function is atypical in the following ways:
-      - Instead of
+1.  This update function is atypical in the following ways:
+      - Instead of the usual
 
             m -> ( m, Cmd msg )
 
@@ -160,29 +159,22 @@ Scroll down for a more detailed explanation.
 
             arg1 -> arg2 -> ... -> a
 
-2.  `call` adds a function to the list of callbacks that is returned together with the model.
+2.  Using [`call`](#call), we add a function to the list of callbacks which is eventually returned together with the model. Think of this as invoking the callback.
 
-3.  Partially applied, [`runStack`](#runStack) gives us a function that takes care of updating the nested `Child` model.
-    extra structure needed for callbacks.
-    We provide `runStack` with a getter (`.child`), a setter (`insertAsChildIn`), and the `Msg` constructor (`ChildMsg`).
+3.  Partially applied, [`runStack`](#runStack) gives us a function that takes care of updating the nested `Feature` model in a way that also accommodates for the extra callback structure.
+    The actual type of the resulting function is slightly complicated, so we’ll typically use the [`Run`](#Run) alias to make things more readable.
 
-        getter : Parent -> Child
-
-        setter : Parent -> Child -> ( Parent, Cmd Msg )
-
-        toMsg : ChildMsg -> Msg
-
-    The actual type of the resulting function is slightly complicated, so we'll typically use the [`Run`](#Run) alias to make things more readable.
-
-4.  The handler's type has to match that of the callback.
+4.  The handler’s type has to match that of the callback.
+    The type parameter `a` is expanded to `m -> ( m, Cmd msg )`, where `m` is the actual type of the parent model.
+    So, in this example,
 
         Bool -> a
 
-    becomes
+    … becomes
 
-        Bool -> Parent -> ( Parent, Cmd Msg )
+        Bool -> Model -> ( Model, Cmd Msg )
 
-5.  In the parent model's `update` function, we use the `inChild` helper (see #3) to update the nested model.
+5.  Finally, in the parent model’s update function, we use the `inFeature` helper (see #3) to update the nested model and apply the callbacks.
 
 
 # Types
@@ -232,25 +224,25 @@ mapE f ( x, calls ) =
     ( f x, calls )
 
 
-{-| A version of [`mapE`](#mapE) that accepts functions of two arguments as input.
+{-| A version of [`mapE`](#mapE) that takes a function of two arguments as input.
 -}
 mapE2 : (a -> b -> c) -> Extended a d -> Extended b d -> Extended c d
 mapE2 f ( x, calls1 ) ( y, calls2 ) =
     ( f x y, calls1 ++ calls2 )
 
 
-{-| A version of [`mapE`](#mapE) that accepts functions of three arguments as input.
+{-| A version of [`mapE`](#mapE) that takes a function of three arguments as input.
 -}
 mapE3 : (a -> b -> c -> d) -> Extended a e -> Extended b e -> Extended c e -> Extended d e
 mapE3 f ( x, calls1 ) ( y, calls2 ) ( z, calls3 ) =
     ( f x y z, calls1 ++ calls2 ++ calls3 )
 
 
-{-| Take an effectful update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on an `Extended a c` value and returns an `( Extended b c, Cmd msg )` pair.
+{-| Take an _effectful_ update function `(a -> ( b, Cmd msg ))` and transform it into one that instead operates on `Extended a c` values and returns an `( Extended b c, Cmd msg )` pair.
+
+_Aside:_ This function behaves like `traverse` in the Traversable type class in Haskell, when we think of updates (`a -> ( b, Cmd msg )`) as the monadic function `a -> m b`.
 
 See also [`andLift`](#andLift).
-
-_Aside:_ This function behaves like `traverse` in Haskell, when we think of updates (`a -> ( b, Cmd msg )`) as monadic functions `a -> m b`.
 
 -}
 lift :
@@ -299,7 +291,7 @@ addCalls calls1 ( model, calls ) =
     save ( model, calls ++ calls1 )
 
 
-{-| Invoke a callback in an update function that returns an `( Extended a c, Cmd msg )` value.
+{-| Invoke a callback in an _extended_ update function. That is, one that returns an `( Extended a c, Cmd msg )` value, as opposed to the usual `( a, Cmd msg )` pair.
 
 See also [`andCall`](#andCall).
 
@@ -316,15 +308,12 @@ andCall =
     andThen << call
 
 
-{-| Compose and apply the list monadic functions (callbacks) accumulated by a nested update call.
+{-| Compose and apply the list of functions (callbacks) accumulated by a nested update call.
 Usually it is not necessary to use this function directly in client code.
 Instead, see [`runStack`](#runStack).
 
-This function is identical to:
-
-    uncurry (flip sequence)
-
 See also [`sequence`](Update.Pipeline#sequence) in `Update.Pipeline`.
+This function is identical to `uncurry (flip sequence)`.
 
 -}
 sequenceCalls : Extended a (a -> ( a, Cmd msg )) -> ( a, Cmd msg )
@@ -339,7 +328,7 @@ type alias Stack m m1 msg msg1 a =
 
 
 {-| An alias that helps making type signatures less verbose in client code.
-See [`runStack`](#runStack) for an example of how to use this type alias.
+See [`runStack`](#runStack) for an example of how to use this.
 -}
 type alias Run m m1 msg msg1 a =
     Stack m m1 msg msg1 a -> m -> ( m, Cmd msg )
@@ -361,7 +350,34 @@ run fun get set toMsg stack model =
         |> andThen (fun >> sequenceCalls)
 
 
-{-| A version of [`runStack`](#runStack) that can be used to update extended models.
+{-| A version of [`runStack`](#runStack) that can be used when both the child’s and the parent’s update functions are of the extended type.
+
+Here is a modified version of the example from the documentation for `runStack`:
+
+    updateFeature :
+        FeatureMsg
+        -> { onComplete : Message -> a
+           , onError : Error -> a
+           }
+        -> Extended Feature
+        -> ( Extended Feature, Cmd FeatureMsg )
+    updateFeature =
+        -- ...
+
+    inFeature : Run (Extended Model c) Feature Msg FeatureMsg a
+    inFeature =
+        runStackE
+            .inner
+            (\m inner -> save { m | inner = inner })
+            FeatureMsg
+
+    update :
+        Msg
+        -> Extended Model c
+        -> ( Extended Model c, Cmd Msg )
+    update msg model =
+        -- ...
+
 -}
 runStackE :
     (d -> m1)
@@ -376,40 +392,61 @@ runStackE g s m stack ( model, calls ) =
         |> andThen (addCalls calls)
 
 
-{-| This function provides the glue code necessary to update a nested model, and subsequently run any resulting callbacks on the parent model.
+{-| Some amount of glue code is required to update a nested model, and subsequently apply the resulting callbacks to the outer model.
+`runStack` takes care of these internals. Typically, it is partially applied with the first three arguments:
+
+  - The first argument is a function that _extracts_ the inner model from the outer.
+    This is usually just a property accessor, like `.inner` in the below example.
+
+```
+getter : outer -> inner
+```
+
+  - The function in the second argument is used to _reinsert_ the inner model back into the outer (parent) model.
+
+```
+setter : outer -> inner -> ( outer, Cmd msg )
+```
+
+  - The third argument is a constructor that takes a message of the inner model’s message type as input and creates one of the parent’s `Msg` type.
+
+```
+toMsg : msg1 -> msg
+```
 
 
-#### _Example:_
+#### _Here is an example:_
 
-    updateFeature :
-        FeatureMsg
+    updateInner :
+        InnerMsg
         -> { onComplete : Message -> a
            , onError : Error -> a
            }
-        -> Extended Feature
-        -> ( Extended Feature, Cmd FeatureMsg )
-    updateFeature =
+        -> Extended Inner
+        -> ( Extended Inner, Cmd InnerMsg )
+    updateInner =
         -- ...
 
     type Msg
-        = FeatureMsg FeatureMsg
+        = InnerMsg InnerMsg
 
-    type alias Parent =
-        { feature : Feature
+    type alias Model =
+        { inner : Inner
         }
 
-    inFeature : Run Parent Feature Msg FeatureMsg a
-    inFeature =
+    inInner : Run Model Inner Msg InnerMsg a
+    inInner =
         runStack
-            .feature
-            (\m feature -> save { m | feature = feature })
-            FeatureMsg
+            .inner
+            (\m inner -> save { m | inner = inner })
+            InnerMsg
 
-    update : Msg -> Parent -> ( Parent, Cmd Msg )
+    update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            FeatureMsg featureMsg ->
-                inFeature (updateFeature featureMsg)
+            InnerMsg innerMsg ->
+                model
+                    |> inInner (updateInner innerMsg)
 
 See also [`Run`](#Run), [`runStackE`](#runStackE).
 
