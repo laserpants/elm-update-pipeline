@@ -5,13 +5,13 @@ module Update.Pipeline.Extended exposing
     , andCall, andLift
     )
 
-{-| This module introduces a simple utility that enables information to be passed upwards in the model-update hierarchy.
+{-| This module introduces a simple utility for information to be passed upwards in the model-update hierarchy.
 The pattern is similar to event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener is then able to respond to state changes by hooking into the event source via one or more _callbacks_ (event handlers).
 
 
 ## Usage example:
 
-The below example shows how to use the [`Extended`](#Extended) type alias together with [`runStack`](#runStack) to implement an update function with support for callbacks.
+The following example shows how to use this module to implement an update function with support for callbacks.
 Scroll down for explanations of the indicated points in the code.
 
     module Main exposing (..)
@@ -142,7 +142,7 @@ Scroll down for explanations of the indicated points in the code.
 
 ### Explanation:
 
-1.  This update function is atypical in the following ways:
+1.  The update function is atypical in the following ways:
       - Instead of the usual
 
             m -> ( m, Cmd msg )
@@ -166,7 +166,7 @@ Scroll down for explanations of the indicated points in the code.
 
 4.  The handler’s type has to match that of the callback.
     The type parameter `a` is expanded to `m -> ( m, Cmd msg )`, where `m` is the actual type of the parent model.
-    So, in this example,
+    So, in this example
 
         Bool -> a
 
@@ -354,22 +354,22 @@ run fun get set toMsg stack model =
 
 Here is a modified version of the example from the documentation for `runStack`:
 
-    updateFeature :
-        FeatureMsg
+    updateInner :
+        InnerMsg
         -> { onComplete : Message -> a
            , onError : Error -> a
            }
-        -> Extended Feature
-        -> ( Extended Feature, Cmd FeatureMsg )
-    updateFeature =
+        -> Extended InnerModel
+        -> ( Extended InnerModel, Cmd InnerMsg )
+    updateInner =
         -- ...
 
-    inFeature : Run (Extended Model c) Feature Msg FeatureMsg a
-    inFeature =
+    inInner : Run (Extended Model c) InnerModel Msg InnerMsg a
+    inInner =
         runStackE
             .inner
             (\m inner -> save { m | inner = inner })
-            FeatureMsg
+            InnerMsg
 
     update :
         Msg
@@ -393,7 +393,7 @@ runStackE g s m stack ( model, calls ) =
 
 
 {-| Some amount of glue code is required to update a nested model, and subsequently apply the resulting callbacks to the outer model.
-`runStack` takes care of these internals. Typically, it is partially applied with the first three arguments:
+`runStack` takes care of those internals. Typically, it is partially applied with the first three arguments:
 
   - The first argument is a function that _extracts_ the inner model from the outer.
     This is usually just a property accessor, like `.inner` in the below example.
@@ -408,7 +408,7 @@ getter : outer -> inner
 setter : outer -> inner -> ( outer, Cmd msg )
 ```
 
-  - The third argument is a constructor that takes a message of the inner model’s message type as input and creates one of the parent’s `Msg` type.
+  - The third argument is a constructor that takes a message of the inner model’s message type as input and creates one of the parent’s type.
 
 ```
 toMsg : msg1 -> msg
@@ -422,8 +422,8 @@ toMsg : msg1 -> msg
         -> { onComplete : Message -> a
            , onError : Error -> a
            }
-        -> Extended Inner
-        -> ( Extended Inner, Cmd InnerMsg )
+        -> Extended InnerModel
+        -> ( Extended InnerModel, Cmd InnerMsg )
     updateInner =
         -- ...
 
@@ -431,10 +431,10 @@ toMsg : msg1 -> msg
         = InnerMsg InnerMsg
 
     type alias Model =
-        { inner : Inner
+        { inner : InnerModel
         }
 
-    inInner : Run Model Inner Msg InnerMsg a
+    inInner : Run Model InnerModel Msg InnerMsg a
     inInner =
         runStack
             .inner
