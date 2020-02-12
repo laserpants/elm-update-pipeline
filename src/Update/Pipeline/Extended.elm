@@ -5,13 +5,13 @@ module Update.Pipeline.Extended exposing
     , andCall, andLift
     )
 
-{-| This module introduces a simple utility for information to be passed upwards in the model-update hierarchy.
+{-| This module introduces a simple callback utility that allows information to be passed upwards in the model-update hierarchy.
 The pattern is similar to event handling in object-oriented languages, in the sense that we can think of a nested model as an _event source_, and of the parent as a _listener_. The event listener is then able to respond to state changes by hooking into the event source via one or more _callbacks_ (event handlers).
 
 
 ## Usage example:
 
-The following example shows how to use this module to implement an update function with support for callbacks.
+The following example shows how to implement an update function with support for callbacks.
 Scroll down for explanations of the indicated points in the code.
 
     module Main exposing (..)
