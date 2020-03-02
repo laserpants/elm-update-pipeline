@@ -251,6 +251,23 @@ testRunStackE =
         ]
 
 
+testChoosing : Test
+testChoosing =
+    let
+        record =
+            { this = "that"
+            , wat = "not"
+            }
+
+        result =
+            choosing (\{ this } _ -> this ++ "hat") (extend record)
+    in
+    describe "using"
+        [ test "expect the result to be the concatenated string"
+            (\_ -> Expect.equal result "thathat")
+        ]
+
+
 suite : Test
 suite =
     describe "Update.Pipeline.Extended"
@@ -267,4 +284,5 @@ suite =
         , testSequenceCalls
         , testRunStack
         , testRunStackE
+        , testChoosing
         ]

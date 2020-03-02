@@ -344,7 +344,7 @@ testWith =
             with .this (\str rec -> { rec | wat = str ++ "hat" }) record
     in
     describe "with"
-        [ test "expect second field to be concatenate string"
+        [ test "expect second field to be the concatenate string"
             (\_ -> Expect.equal result.wat "thathat")
         ]
 
@@ -361,7 +361,7 @@ testUsing =
             using (\{ this } _ -> this ++ "hat") record
     in
     describe "using"
-        [ test "expect the result to concatenated string"
+        [ test "expect the result to be the concatenated string"
             (\_ -> Expect.equal result "thathat")
         ]
 
@@ -417,7 +417,7 @@ testAndUsing =
                 |> andUsing (\{ this } _ -> save (this ++ "hat"))
     in
     describe "andUsing"
-        [ test "expect the result to concatenated string"
+        [ test "expect the result to be the concatenated string"
             (\_ -> Expect.equal result "thathat")
         ]
 

@@ -3,6 +3,7 @@ module Update.Pipeline.Extended exposing
     , call, sequenceCalls, runStack, runStackE, extend, mapE, mapE2, mapE3
     , lift, lift2, lift3
     , andCall, andLift
+    , choosing
     )
 
 {-| This module introduces a simple callback utility that allows information to be passed upwards in the model-update hierarchy.
@@ -192,6 +193,11 @@ Scroll down for explanations of the indicated points in the code.
 # Shortcuts
 
 @docs andCall, andLift
+
+
+# Pointful Helpers
+
+@docs choosing
 
 -}
 
@@ -460,3 +466,10 @@ runStack :
     -> ( m, Cmd msg )
 runStack =
     run identity
+
+
+{-| A version of [`using`](Update.Pipeline#using) that works with `Extended` values.
+-}
+choosing : (a -> Extended a c -> b) -> Extended a c -> b
+choosing fun ( model, calls ) =
+    fun model ( model, calls )
