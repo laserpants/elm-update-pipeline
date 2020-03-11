@@ -1,6 +1,6 @@
 module Update.Pipeline.Extended exposing
     ( Extended, Stack, Run
-    , call, sequenceCalls, runStack, runStackExtended, runStackE, extend, mapE, mapE2, mapE3
+    , call, sequenceCalls, runStack, runStackE, runStackExtended, extend, mapE, mapE2, mapE3
     , lift, lift2, lift3
     , andCall, andLift
     , choosing
