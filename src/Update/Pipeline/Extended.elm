@@ -1,6 +1,6 @@
 module Update.Pipeline.Extended exposing
     ( Extended, Stack, Run
-    , call, sequenceCalls, runStack, runStackE, extend, mapE, mapE2, mapE3
+    , call, sequenceCalls, runStack, runStackExtended, runStackE, extend, mapE, mapE2, mapE3
     , lift, lift2, lift3
     , andCall, andLift
     , choosing
@@ -185,7 +185,7 @@ Scroll down for explanations of the indicated points in the code.
 
 # Callback Interface
 
-@docs call, sequenceCalls, runStack, runStackE, extend, mapE, mapE2, mapE3
+@docs call, sequenceCalls, runStack, runStackE, runStackExtended, extend, mapE, mapE2, mapE3
 
 @docs lift, lift2, lift3
 
@@ -356,6 +356,13 @@ run fun get set toMsg stack model =
         |> andThen (fun >> sequenceCalls)
 
 
+{-| **DEPRECATED:** Use [`runStackExtended`](#runStackExtended) instead.
+-}
+runStackE : (d -> m1) -> (d -> a -> ( b, Cmd msg )) -> (msg1 -> msg) -> (Extended m1 f -> ( Extended a (Extended b c -> ( Extended b c, Cmd msg )), Cmd msg1 )) -> Extended d c -> ( Extended b c, Cmd msg )
+runStackE =
+    runStackExtended
+
+
 {-| A version of [`runStack`](#runStack) that can be used when both the child’s and the parent’s update functions are of the extended type.
 
 Here is a modified version of the example from the documentation for `runStack`:
@@ -372,7 +379,7 @@ Here is a modified version of the example from the documentation for `runStack`:
 
     inInner : Run (Extended Model c) InnerModel Msg InnerMsg a
     inInner =
-        runStackE
+        runStackExtended
             .inner
             (\m inner -> save { m | inner = inner })
             InnerMsg
@@ -385,14 +392,14 @@ Here is a modified version of the example from the documentation for `runStack`:
         -- ...
 
 -}
-runStackE :
+runStackExtended :
     (d -> m1)
     -> (d -> a -> ( b, Cmd msg ))
     -> (msg1 -> msg)
     -> (Extended m1 f -> ( Extended a (Extended b c -> ( Extended b c, Cmd msg )), Cmd msg1 ))
     -> Extended d c
     -> ( Extended b c, Cmd msg )
-runStackE g s m stack ( model, calls ) =
+runStackExtended g s m stack ( model, calls ) =
     model
         |> run (mapFirst extend) g s m stack
         |> andThen (addCalls calls)
@@ -454,7 +461,7 @@ toMsg : msg1 -> msg
                 model
                     |> inInner (updateInner innerMsg)
 
-See also [`Run`](#Run), [`runStackE`](#runStackE).
+See also [`Run`](#Run), [`runStackExtended`](#runStackExtended).
 
 -}
 runStack :
