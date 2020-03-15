@@ -70,7 +70,7 @@ Making the arguments implicit in this way allows the programmer to think about t
 -}
 
 
-{-| Inject a value into a `( model, Cmd msg )` pair without adding any commands.
+{-| Turn a `model` value into a `( model, Cmd msg )` pair without adding any commands.
 
     save model =
         ( model, Cmd.none )
