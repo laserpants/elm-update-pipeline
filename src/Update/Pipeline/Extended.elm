@@ -195,7 +195,7 @@ Scroll down for explanations of the indicated points in the code.
 @docs andCall, andLift
 
 
-# Pointful Helpers
+# Pointfree Helpers
 
 @docs choosing
 
